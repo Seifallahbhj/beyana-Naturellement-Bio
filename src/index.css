@@ -1,0 +1,100 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&family=Lato:wght@300;400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 48 100% 97%;
+    --foreground: 36 33% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 36 33% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 36 33% 10%;
+
+    --primary: 83 28% 48%;
+    --primary-foreground: 60 100% 97%;
+
+    --secondary: 60 15% 94%;
+    --secondary-foreground: 36 33% 10%;
+
+    --muted: 60 10% 90%;
+    --muted-foreground: 36 5% 45%;
+
+    --accent: 83 30% 60%;
+    --accent-foreground: 36 33% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 60 100% 97%;
+
+    --border: 36 20% 85%;
+    --input: 36 20% 85%;
+    --ring: 83 28% 48%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 36 33% 10%;
+    --foreground: 60 15% 94%;
+
+    --card: 36 20% 15%;
+    --card-foreground: 60 15% 94%;
+
+    --popover: 36 20% 15%;
+    --popover-foreground: 60 15% 94%;
+
+    --primary: 83 28% 48%;
+    --primary-foreground: 36 33% 10%;
+
+    --secondary: 36 20% 25%;
+    --secondary-foreground: 60 15% 94%;
+
+    --muted: 36 20% 25%;
+    --muted-foreground: 36 5% 65%;
+
+    --accent: 83 30% 40%;
+    --accent-foreground: 60 15% 94%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 60 15% 94%;
+
+    --border: 36 20% 30%;
+    --input: 36 20% 30%;
+    --ring: 83 28% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-montserrat;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-playfair;
+  }
+}
+
+.product-card {
+  @apply transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-[1.02];
+}
+
+.nav-link {
+  @apply relative font-montserrat font-medium text-foreground hover:text-beyana-green transition-colors duration-300;
+}
+
+.nav-link::after {
+  @apply content-[''] absolute w-0 h-0.5 bg-beyana-green left-1/2 -translate-x-1/2 bottom-0 transition-all duration-300;
+}
+
+.nav-link:hover::after {
+  @apply w-full;
+}
