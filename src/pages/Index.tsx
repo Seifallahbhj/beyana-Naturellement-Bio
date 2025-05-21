@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import Layout from '@/components/Layout';
 import { motion } from 'framer-motion';
+import { Loader2, AlertTriangle } from 'lucide-react';
+import { useProducts } from '@/hooks/useProducts';
 
 const Index = () => {
   // Nous utilisons des animations simples pour améliorer l'expérience utilisateur
@@ -11,6 +13,10 @@ const Index = () => {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
   };
+
+  // Récupérer les produits vedettes depuis l'API
+  const { getFeaturedProducts } = useProducts();
+  const featuredProducts = getFeaturedProducts;
 
   return (
     <Layout>
@@ -130,52 +136,48 @@ const Index = () => {
             Découvrez notre sélection de produits bio les plus appréciés par notre communauté
           </p>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Granola protéiné",
-                price: 9.99,
-                image: "https://content.joseedistasio.ca/app/uploads/2024/12/02222315/natalie-behn-qj_zfYm-sdI-unsplash-999x1496.jpg"
-              },
-              {
-                name: "Mix de noix bio",
-                price: 12.49,
-                image: "https://img.freepik.com/photos-premium/assortiment-fruits-secs-noix_107389-1615.jpg"
-              },
-              {
-                name: "Barre énergétique",
-                price: 3.99,
-                image: "https://www.tables-auberges.com/storage/uploads/2024/09/Firefly-Barres-energetiques-aux-flocons-davoine-et-aux-fruits-secs-57718-1024x1024.jpg"
-              }
-            ].map((product, index) => (
-              <motion.div 
-                key={product.name}
-                className="bg-white rounded-lg overflow-hidden shadow-md product-card"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: index * 0.2 }}
-              >
-                <Link to="/products/1">
-                  <div className="h-64 overflow-hidden">
-                    <img 
-                      src={product.image} 
-                      alt={product.name} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold text-beyana-green">{product.price.toFixed(2)} €</span>
-                      <Button variant="outline" className="border-beyana-green text-beyana-green hover:bg-beyana-green hover:text-white transition-colors">
-                        Ajouter
+          {featuredProducts.isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <Loader2 className="h-8 w-8 animate-spin text-beyana-green" />
+              <span className="ml-2 text-lg">Chargement des produits vedettes...</span>
+            </div>
+          ) : featuredProducts.isError ? (
+            <div className="text-center text-red-500 p-4 rounded-md bg-red-50 max-w-md mx-auto">
+              <AlertTriangle className="h-6 w-6 mx-auto mb-2" />
+              <p>Une erreur est survenue lors du chargement des produits vedettes.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredProducts.data?.map((product, index) => (
+                <motion.div 
+                  key={product._id}
+                  className="bg-white rounded-lg overflow-hidden shadow-md product-card"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: index * 0.2 }}
+                >
+                  <Link to={`/products/${product.slug}`}>
+                    <div className="h-64 overflow-hidden">
+                      <img 
+                        src={product.images[0]} 
+                        alt={product.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-6">
+                      <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-bold text-beyana-green">{product.price.toFixed(2)} €</span>
+                        <Button variant="outline" className="border-beyana-green text-beyana-green hover:bg-beyana-green hover:text-white transition-colors">
+                          Ajouter
                       </Button>
                     </div>
                   </div>
                 </Link>
               </motion.div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
           
           <div className="text-center mt-12">
             <Link to="/products">
