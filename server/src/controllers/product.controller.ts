@@ -1,15 +1,32 @@
 import { Request, Response, NextFunction } from 'express';
-import mongoose from 'mongoose';
+import mongoose, { SortOrder } from 'mongoose';
 import Product from '../models/product.model';
 import Category from '../models/category.model';
 import { AppError, catchAsync } from '../middlewares/errorHandler';
+
+// Interfaces pour le typage des requêtes MongoDB
+interface MongoQuery {
+  $or?: Array<Record<string, unknown>>;
+  category?: mongoose.Types.ObjectId;
+  isOrganic?: boolean;
+  isVegan?: boolean;
+  isGlutenFree?: boolean;
+  price?: {
+    $gte?: number;
+    $lte?: number;
+  };
+}
+
+interface MongoSort {
+  [key: string]: SortOrder;
+}
 
 // @desc    Récupérer tous les produits avec pagination et filtres
 // @route   GET /api/v1/products
 // @access  Public
 export const getProducts = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   // Construire la requête
-  let query: any = {};
+  const query: MongoQuery = {};
   
   // Filtrage par mot-clé
   if (req.query.keyword) {
@@ -57,7 +74,7 @@ export const getProducts = catchAsync(async (req: Request, res: Response, next: 
   const skip = (page - 1) * limit;
   
   // Tri
-  let sort: any = {};
+  let sort: MongoSort = {};
   if (req.query.sort) {
     const sortFields = (req.query.sort as string).split(',');
     sortFields.forEach(field => {
@@ -77,6 +94,14 @@ export const getProducts = catchAsync(async (req: Request, res: Response, next: 
     select = (req.query.fields as string).split(',').join(' ');
   }
   
+  console.log('Requête MongoDB:', JSON.stringify(query, null, 2));
+  console.log('Options de tri:', JSON.stringify(sort, null, 2));
+  console.log('Skip:', skip, 'Limit:', limit);
+  
+  // Vérifier le nombre total de produits dans la collection
+  const totalInCollection = await Product.countDocuments({});
+  console.log('Nombre total de produits dans la collection:', totalInCollection);
+  
   // Exécuter la requête
   const products = await Product.find(query)
     .select(select)
@@ -85,8 +110,14 @@ export const getProducts = catchAsync(async (req: Request, res: Response, next: 
     .limit(limit)
     .populate('category', 'name slug');
   
+  console.log('Produits trouvés:', products.length);
+  if (products.length > 0) {
+    console.log('Premier produit:', JSON.stringify(products[0], null, 2));
+  }
+  
   // Compter le nombre total de produits pour la pagination
   const total = await Product.countDocuments(query);
+  console.log('Total des produits correspondant aux critères:', total);
   
   res.status(200).json({
     success: true,

@@ -22,7 +22,23 @@ export const useProducts = (filters?: ProductFilters) => {
   const getProducts = useQuery({
     queryKey: productKeys.list(filters || {}),
     queryFn: () => productService.getProducts(filters),
-    select: (data) => data.data || [],
+    select: (data) => {
+      // Adapter la réponse au format attendu par le composant
+      // En utilisant la structure actuelle de l'API
+      const products = data.data || [];
+      const count = data.count || 0;
+      const page = filters?.page || 1;
+      const limit = filters?.limit || 12;
+      const totalPages = Math.ceil(count / limit) || 1;
+      
+      return {
+        data: products,
+        total: count,
+        page: page,
+        limit: limit,
+        totalPages: totalPages
+      };
+    },
   });
 
   // Récupérer les produits mis en avant

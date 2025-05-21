@@ -50,9 +50,22 @@ export const useAuth = () => {
       }
     },
     onError: (error: Error) => {
+      // Analyse de l'erreur pour fournir un message plus spécifique
+      let errorMessage = 'Identifiants incorrects. Veuillez réessayer.';
+      
+      if (error.message) {
+        if (error.message.includes('not found') || error.message.includes('introuvable')) {
+          errorMessage = 'Adresse email non reconnue. Veuillez vérifier ou créer un compte.';
+        } else if (error.message.includes('password') || error.message.includes('mot de passe')) {
+          errorMessage = 'Mot de passe incorrect. Veuillez réessayer.';
+        } else if (error.message.includes('network') || error.message.includes('réseau')) {
+          errorMessage = 'Problème de connexion au serveur. Vérifiez votre connexion internet.';
+        }
+      }
+      
       toast({
         title: 'Erreur de connexion',
-        description: error.message || 'Identifiants incorrects. Veuillez réessayer.',
+        description: errorMessage,
         variant: 'destructive',
       });
     },
@@ -79,9 +92,22 @@ export const useAuth = () => {
       }
     },
     onError: (error: Error) => {
+      // Analyse de l'erreur pour fournir un message plus spécifique
+      let errorMessage = 'Impossible de créer votre compte. Veuillez réessayer.';
+      
+      if (error.message) {
+        if (error.message.includes('email') && (error.message.includes('exists') || error.message.includes('existe'))) {
+          errorMessage = 'Cette adresse email est déjà utilisée. Veuillez vous connecter ou utiliser une autre adresse.';
+        } else if (error.message.includes('password') || error.message.includes('mot de passe')) {
+          errorMessage = 'Problème avec le mot de passe. Assurez-vous qu\'il respecte les critères de sécurité.';
+        } else if (error.message.includes('network') || error.message.includes('réseau')) {
+          errorMessage = 'Problème de connexion au serveur. Vérifiez votre connexion internet.';
+        }
+      }
+      
       toast({
         title: 'Erreur d\'inscription',
-        description: error.message || 'Impossible de créer votre compte. Veuillez réessayer.',
+        description: errorMessage,
         variant: 'destructive',
       });
     },

@@ -8,6 +8,10 @@ import { motion } from 'framer-motion';
 import { useProductBySlug, useSimilarProducts } from '@/hooks/useProducts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Product } from '@/services/api/productService';
+import { useCart } from '@/hooks/useCart';
+import { useWishlist } from '@/hooks/useWishlist';
+import { useToast } from '@/hooks/use-toast';
+import { Heart } from 'lucide-react';
 
 // Interface pour les avis (reviews)
 interface Review {
@@ -20,6 +24,9 @@ const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const { addItem, isInCart } = useCart();
+  const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist();
+  const { toast } = useToast();
   
   // Récupérer les détails du produit depuis l'API
   const { data: product, isLoading, isError, error } = useProductBySlug(slug);
@@ -74,7 +81,7 @@ const ProductDetail = () => {
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
             <strong className="font-bold">Erreur!</strong>
             <span className="block sm:inline"> Impossible de charger les détails du produit.</span>
-            <p className="mt-2">Détails de l'erreur: {(error as any)?.message || 'Erreur inconnue'}</p>
+            <p className="mt-2">Détails de l'erreur: {error instanceof Error ? error.message : 'Erreur inconnue'}</p>
             <div className="mt-4">
               <Link to="/products" className="text-beyana-green hover:underline">
                 Retour aux produits
@@ -114,9 +121,27 @@ const ProductDetail = () => {
   
   // Gérer l'ajout au panier
   const handleAddToCart = () => {
-    // Ici, vous implémenteriez la logique d'ajout au panier
-    console.log(`Ajout au panier: ${quantity} x ${product.name}`);
-    // TODO: Implémenter la fonctionnalité d'ajout au panier
+    if (product.stock < quantity) {
+      toast({
+        title: "Stock insuffisant",
+        description: `Il ne reste que ${product.stock} unités disponibles.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    addItem(product, quantity);
+    
+    // Animation et feedback utilisateur gérés par le CartProvider
+  };
+  
+  // Gérer l'ajout/retrait de la wishlist
+  const handleWishlistToggle = () => {
+    if (isInWishlist(product._id)) {
+      removeFromWishlist(product._id);
+    } else {
+      addToWishlist(product);
+    }
   };
   
   return (
@@ -236,27 +261,30 @@ const ProductDetail = () => {
               </span>
             </div>
             
-            <Button 
-              className="w-full mb-6" 
-              onClick={handleAddToCart}
-              disabled={product.stock <= 0}
-            >
-              {product.stock > 0 ? 'Ajouter au panier' : 'Indisponible'}
-            </Button>
-            
             <div className="flex flex-col sm:flex-row gap-3 mb-8">
               <Button 
-                className="bg-beyana-green hover:bg-beyana-darkgreen text-white"
+                className="flex-1 bg-beyana-green hover:bg-beyana-darkgreen text-white"
                 size="lg"
+                onClick={handleAddToCart}
+                disabled={product.stock <= 0}
               >
-                Ajouter au panier
+                {product.stock > 0 ? 'Ajouter au panier' : 'Indisponible'}
               </Button>
               <Button 
                 variant="outline" 
                 className="border-beyana-green text-beyana-green hover:bg-beyana-green hover:text-white"
                 size="lg"
+                disabled={product.stock <= 0}
               >
                 Acheter maintenant
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className={`rounded-full ${isInWishlist(product._id) ? 'bg-red-50 text-red-500 border-red-200' : 'text-gray-500'}`}
+                onClick={handleWishlistToggle}
+              >
+                <Heart className={`h-5 w-5 ${isInWishlist(product._id) ? 'fill-red-500' : ''}`} />
               </Button>
             </div>
             

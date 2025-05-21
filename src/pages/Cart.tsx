@@ -15,50 +15,25 @@ import {
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
+import { useCart } from '@/hooks/useCart';
 
-// Mock cart data for now - in a real app this would come from context or state management
-const mockCartItems = [
-  {
-    id: 1,
-    name: "Granola protéiné",
-    price: 9.99,
-    image: "https://images.unsplash.com/photo-1517093157656-b9eccef91cb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    quantity: 2
-  },
-  {
-    id: 2,
-    name: "Mix de noix bio",
-    price: 12.50,
-    image: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    quantity: 1
-  }
-];
+// Le panier est maintenant géré par le contexte CartContext
 
 const Cart = () => {
-  const [cartItems, setCartItems] = React.useState(mockCartItems);
+  const { cart, updateItem, removeItem, getCartTotal } = useCart();
   const { toast } = useToast();
+  const { items: cartItems } = cart;
 
   // Calculate subtotal
-  const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const subtotal = getCartTotal();
   const shipping = subtotal > 49 ? 0 : 4.99;
   const total = subtotal + shipping;
 
-  const updateQuantity = (id: number, change: number) => {
-    setCartItems(items => 
-      items.map(item => 
-        item.id === id 
-          ? { ...item, quantity: Math.max(1, item.quantity + change) } 
-          : item
-      )
-    );
-  };
-
-  const removeItem = (id: number) => {
-    setCartItems(items => items.filter(item => item.id !== id));
-    toast({
-      title: "Produit supprimé",
-      description: "L'article a été retiré de votre panier.",
-    });
+  const updateQuantity = (id: string, change: number) => {
+    const item = cartItems.find(item => item.id === id);
+    if (item) {
+      updateItem(id, item.quantity + change);
+    }
   };
 
   const handleCheckout = () => {
@@ -103,7 +78,7 @@ const Cart = () => {
                           </div>
                         </TableCell>
                         <TableCell className="align-middle">
-                          <Link to={`/products/${item.id}`} className="font-medium hover:text-beyana-green transition-colors">
+                          <Link to={`/products/${item.productId}`} className="font-medium hover:text-beyana-green transition-colors">
                             {item.name}
                           </Link>
                         </TableCell>
@@ -113,24 +88,26 @@ const Cart = () => {
                             <Button 
                               variant="outline" 
                               size="icon" 
+                              className="h-8 w-8 rounded-r-none"
                               onClick={() => updateQuantity(item.id, -1)}
                               disabled={item.quantity <= 1}
-                              className="h-8 w-8"
                             >
                               <Minus className="h-3 w-3" />
                             </Button>
-                            <span className="w-10 text-center">{item.quantity}</span>
+                            <div className="h-8 px-3 flex items-center justify-center border-y border-input">
+                              {item.quantity}
+                            </div>
                             <Button 
                               variant="outline" 
                               size="icon" 
+                              className="h-8 w-8 rounded-l-none"
                               onClick={() => updateQuantity(item.id, 1)}
-                              className="h-8 w-8"
                             >
                               <Plus className="h-3 w-3" />
                             </Button>
                           </div>
                         </TableCell>
-                        <TableCell className="text-right font-medium align-middle">
+                        <TableCell className="text-right align-middle">
                           {(item.price * item.quantity).toFixed(2)}€
                         </TableCell>
                         <TableCell className="align-middle">

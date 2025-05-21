@@ -35,7 +35,21 @@ app.use(cookieParser()); // Pour gérer les cookies
 
 // Servir les fichiers statiques (pour la production)
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../public')));
+  // Servir les fichiers statiques du build de production
+  app.use(express.static(path.join(__dirname, '../../dist')));
+  
+  // Gérer le routage côté client pour toutes les autres requêtes
+  app.get('*', (req: Request, res: Response) => {
+    const filePath = path.join(__dirname, '../../dist/index.html');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (res as any).sendFile(filePath, (err: Error) => {
+      if (err) {
+        console.error('Erreur lors de l\'envoi du fichier:', err);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (res as any).status(500).send('Erreur lors du chargement de l\'application');
+      }
+    });
+  });
 }
 
 // Routes API

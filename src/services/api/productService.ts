@@ -1,6 +1,25 @@
 import api, { ApiResponse } from './client';
 
+// Interface pour la pagination
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 // Types
+export interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  image?: string;
+  level?: number;
+  isActive?: boolean;
+}
+
 export interface Product {
   _id: string;
   name: string;
@@ -9,7 +28,7 @@ export interface Product {
   price: number;
   discountPrice?: number;
   images: string[];
-  category: string;
+  category: string | Category;
   nutritionalInfo: {
     calories: number;
     protein: number;
@@ -42,6 +61,7 @@ export interface ProductFilters {
   isOrganic?: boolean;
   isVegan?: boolean;
   isGlutenFree?: boolean;
+  countryOfOrigin?: string;
   sort?: string;
   page?: number;
   limit?: number;

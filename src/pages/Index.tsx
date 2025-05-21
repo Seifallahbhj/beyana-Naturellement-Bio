@@ -89,17 +89,17 @@ const Index = () => {
               {
                 title: "Super-aliments",
                 image: "https://cache.cosmopolitan.fr/data/photo/w1000_ci/5c/super-aliments.jpg",
-                link: "/products?category=superfoods"
+                link: "/products?category=superaliments"
               },
               {
                 title: "Petit-déjeuner",
                 image: "https://www.ca-se-saurait.fr/wp-content/uploads/2012/10/food-2569257_1280-1000x666.jpg",
-                link: "/products?category=breakfast"
+                link: "/products?category=petit-dejeuner"
               },
               {
                 title: "Boissons",
                 image: "https://www.1001cocktails.com/wp-content/uploads/1001cocktails/2023/05/shutterstock_1699610089.jpg",
-                link: "/products?category=drinks"
+                link: "/products?category=boissons"
               }
             ].map((category, index) => (
               <motion.div 

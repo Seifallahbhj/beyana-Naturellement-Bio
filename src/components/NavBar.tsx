@@ -2,13 +2,20 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Menu, X, LogIn, UserPlus } from 'lucide-react';
+import { ShoppingCart, Menu, X, LogIn, UserPlus, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useCart } from '@/hooks/useCart';
+import { useWishlist } from '@/hooks/useWishlist';
+import { Badge } from "@/components/ui/badge";
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { getCartItemsCount } = useCart();
+  const { wishlist } = useWishlist();
+  const cartItemsCount = getCartItemsCount();
+  const wishlistItemsCount = wishlist.items.length;
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -62,9 +69,30 @@ const NavBar = () => {
               </>
             )}
             
+            <Link to="/wishlist">
+              <Button variant="ghost" size="icon" className="text-beyana-green hover:bg-beyana-lightgreen/20 relative">
+                <Heart className="h-5 w-5" />
+                {wishlistItemsCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 bg-beyana-green text-white text-xs"
+                  >
+                    {wishlistItemsCount}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
             <Link to="/cart">
-              <Button variant="ghost" size="icon" className="text-beyana-green hover:bg-beyana-lightgreen/20">
+              <Button variant="ghost" size="icon" className="text-beyana-green hover:bg-beyana-lightgreen/20 relative">
                 <ShoppingCart className="h-5 w-5" />
+                {cartItemsCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 bg-beyana-green text-white text-xs"
+                  >
+                    {cartItemsCount}
+                  </Badge>
+                )}
               </Button>
             </Link>
             

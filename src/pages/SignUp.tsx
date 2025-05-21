@@ -1,12 +1,15 @@
 
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useReturnUrl } from "@/hooks/useReturnUrl";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthContext } from "@/hooks/useAuthContext";
 import Layout from "@/components/Layout";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Form,
   FormControl,
@@ -47,8 +50,20 @@ const formSchema = z.object({
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { register, isLoading } = useAuthContext();
+  const { getReturnUrl, redirectToReturnUrl } = useReturnUrl();
+  
+  // Vérifier s'il y a une URL de retour dans les paramètres
+  useEffect(() => {
+    // Si l'utilisateur est déjà connecté, le rediriger
+    if (localStorage.getItem('token')) {
+      redirectToReturnUrl();
+    }
+  }, [redirectToReturnUrl]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,14 +77,30 @@ const SignUp = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // Simuler une inscription réussie
-    console.log("SignUp values:", values);
-    toast({
-      title: "Inscription réussie",
-      description: "Bienvenue chez Beyana! Votre compte a été créé avec succès.",
-    });
-    navigate("/");
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setError(null);
+    try {
+      // Appel à l'API d'inscription via le hook useAuth
+      await register.mutateAsync({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        password: values.password,
+        passwordConfirm: values.confirmPassword
+      });
+      
+      // Rediriger vers l'URL de retour après inscription réussie
+      redirectToReturnUrl();
+    } catch (err: unknown) {
+      // Gestion des erreurs
+      const errorMessage = err instanceof Error ? err.message : "Une erreur est survenue lors de l'inscription";
+      setError(errorMessage);
+      toast({
+        title: "Erreur d'inscription",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -83,6 +114,13 @@ const SignUp = () => {
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">
+          {error && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertTitle>Erreur</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="flex gap-4">
@@ -154,6 +192,7 @@ const SignUp = () => {
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="********"
+                          autoComplete="new-password"
                           {...field}
                           className="pl-10 pr-10"
                         />
@@ -189,6 +228,7 @@ const SignUp = () => {
                         <Input
                           type={showConfirmPassword ? "text" : "password"}
                           placeholder="********"
+                          autoComplete="new-password"
                           {...field}
                           className="pl-10 pr-10"
                         />
@@ -241,8 +281,19 @@ const SignUp = () => {
                 )}
               />
 
-              <Button type="submit" className="w-full bg-beyana-green hover:bg-beyana-green/90">
-                S'inscrire
+              <Button 
+                type="submit" 
+                className="w-full bg-beyana-green hover:bg-beyana-green/90"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Inscription en cours...
+                  </>
+                ) : (
+                  "S'inscrire"
+                )}
               </Button>
 
               <div className="text-center mt-4">

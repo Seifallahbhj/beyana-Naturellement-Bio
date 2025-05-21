@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 // Types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   message?: string;
@@ -11,7 +11,7 @@ export interface ApiResponse<T = any> {
 // Configuration par défaut
 // En développement, on utilise le proxy configuré dans vite.config.ts
 // En production, on utilise l'URL complète définie dans les variables d'environnement
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
 // Création de l'instance Axios
 const apiClient: AxiosInstance = axios.create({
@@ -103,7 +103,7 @@ export const api = {
     }
   },
   
-  post: async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> => {
+  post: async <T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig): Promise<ApiResponse<T>> => {
     try {
       const response = await apiClient.post<ApiResponse<T>>(url, data, config);
       return response.data;
@@ -113,7 +113,7 @@ export const api = {
     }
   },
   
-  put: async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> => {
+  put: async <T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig): Promise<ApiResponse<T>> => {
     try {
       const response = await apiClient.put<ApiResponse<T>>(url, data, config);
       return response.data;
@@ -139,8 +139,18 @@ const handleApiError = (error: AxiosError): void => {
   const errorResponse = error.response?.data as ApiResponse | undefined;
   const errorMessage = errorResponse?.message || 'Une erreur est survenue';
   
-  // Ici, vous pouvez ajouter une logique de notification d'erreur
-  console.error('API Error:', errorMessage);
+  // Log détaillé de l'erreur pour le débogage
+  console.error('API Error:', {
+    status: error.response?.status,
+    statusText: error.response?.statusText,
+    url: error.config?.url,
+    method: error.config?.method?.toUpperCase(),
+    message: errorMessage,
+    data: errorResponse
+  });
+  
+  // Ici, vous pourriez intégrer un système de notification comme toast
+  // ou envoyer l'erreur à un service de monitoring
 };
 
 export default api;

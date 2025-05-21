@@ -1,11 +1,13 @@
 
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useReturnUrl } from "@/hooks/useReturnUrl";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthContext } from "@/hooks/useAuthContext";
 import Layout from "@/components/Layout";
 import {
   Form,
@@ -17,6 +19,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -29,8 +32,20 @@ const formSchema = z.object({
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login, isLoading } = useAuthContext();
+  const { getReturnUrl, redirectToReturnUrl } = useReturnUrl();
+  
+  // Vérifier s'il y a une URL de retour dans les paramètres
+  useEffect(() => {
+    // Si l'utilisateur est déjà connecté, le rediriger
+    if (localStorage.getItem('token')) {
+      redirectToReturnUrl();
+    }
+  }, [redirectToReturnUrl]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,14 +55,27 @@ const Login = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // Simuler une connexion réussie
-    console.log("Login attempt:", values);
-    toast({
-      title: "Connexion réussie",
-      description: "Vous êtes maintenant connecté à votre compte Beyana.",
-    });
-    navigate("/");
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setError(null);
+    try {
+      // Appel à l'API d'authentification via le hook useAuth
+      await login.mutateAsync({
+        email: values.email,
+        password: values.password
+      });
+      
+      // Rediriger vers l'URL de retour après connexion réussie
+      redirectToReturnUrl();
+    } catch (err: unknown) {
+      // Gestion des erreurs
+      const errorMessage = err instanceof Error ? err.message : "Une erreur est survenue lors de la connexion";
+      setError(errorMessage);
+      toast({
+        title: "Erreur de connexion",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -61,6 +89,13 @@ const Login = () => {
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">
+          {error && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertTitle>Erreur</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -95,6 +130,7 @@ const Login = () => {
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="********"
+                          autoComplete="current-password"
                           {...field}
                           className="pl-10 pr-10"
                         />
@@ -125,8 +161,19 @@ const Login = () => {
                 </Link>
               </div>
 
-              <Button type="submit" className="w-full bg-beyana-green hover:bg-beyana-green/90">
-                Se connecter
+              <Button 
+                type="submit" 
+                className="w-full bg-beyana-green hover:bg-beyana-green/90"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Connexion en cours...
+                  </>
+                ) : (
+                  "Se connecter"
+                )}
               </Button>
 
               <div className="text-center mt-4">

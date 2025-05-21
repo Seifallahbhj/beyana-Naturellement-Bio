@@ -5,6 +5,27 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Styles pour React Query Devtools */
+.react-query-devtools {
+  --rdt-button-size: 2.5rem !important;
+  --rdt-button-bottom: 1.5rem !important;
+  --rdt-button-left: 1.5rem !important;
+  z-index: 9999 !important;
+}
+
+.react-query-devtools-button {
+  background-color: hsl(83, 28%, 48%) !important;
+  color: white !important;
+  border-radius: 50% !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.react-query-devtools-button:hover {
+  transform: scale(1.1) !important;
+  background-color: hsl(83, 28%, 40%) !important;
+}
+
 @layer base {
   :root {
     --background: 48 100% 97%;
