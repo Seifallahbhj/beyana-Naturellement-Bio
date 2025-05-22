@@ -233,14 +233,42 @@ orderSchema.post<IOrder>('save', async function() {
   }
 });
 
+// Types pour les statistiques
+interface SalesStats {
+  _id: null;
+  totalSales: number;
+  numberOfOrders: number;
+  averageOrderValue: number;
+}
+
+interface OrderSummaryStats {
+  _id: null;
+  totalRevenue: number;
+  totalOrders: number;
+  averageOrderValue: number;
+  totalTax: number;
+  totalShipping: number;
+}
+
+interface StatusStats {
+  _id: string;
+  count: number;
+  revenue: number;
+}
+
+interface OrderStats {
+  summary: OrderSummaryStats;
+  byStatus: StatusStats[];
+}
+
 // Interface pour les méthodes statiques du modèle Order
 interface OrderModel extends mongoose.Model<IOrder> {
-  getSalesStats(startDate: Date, endDate: Date): Promise<any[]>;
-  getOrderStats(startDate: Date, endDate: Date): Promise<any[]>;
+  getSalesStats(startDate: Date, endDate: Date): Promise<SalesStats[]>;
+  getOrderStats(startDate: Date, endDate: Date): Promise<OrderStats>;
 }
 
 // Méthode statique pour obtenir des statistiques de vente
-orderSchema.statics.getSalesStats = async function(startDate: Date, endDate: Date): Promise<any[]> {
+orderSchema.statics.getSalesStats = async function(startDate: Date, endDate: Date): Promise<SalesStats[]> {
   return this.aggregate([
     {
       $match: {
@@ -260,7 +288,7 @@ orderSchema.statics.getSalesStats = async function(startDate: Date, endDate: Dat
 };
 
 // Méthode statique pour obtenir des statistiques complètes sur les commandes
-orderSchema.statics.getOrderStats = async function(startDate: Date, endDate: Date): Promise<any> {
+orderSchema.statics.getOrderStats = async function(startDate: Date, endDate: Date): Promise<OrderStats> {
   const stats = await this.aggregate([
     {
       $match: {

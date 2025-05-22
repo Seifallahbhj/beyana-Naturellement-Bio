@@ -4,6 +4,7 @@ import Review from '../models/review.model';
 import Product from '../models/product.model';
 import Order from '../models/order.model';
 import { AppError, catchAsync } from '../middlewares/errorHandler';
+import { ReviewQuery } from '../types';
 
 // @desc    Créer un nouvel avis
 // @route   POST /api/v1/reviews
@@ -20,7 +21,8 @@ export const createReview = catchAsync(async (req: Request, res: Response, next:
   // Vérifier si l'utilisateur a acheté le produit
   // Convertir l'ID utilisateur en ObjectId
   const userId = new mongoose.Types.ObjectId(req.user.id);
-  const hasPurchased = await Review.hasUserPurchasedProduct(userId, product);
+  const productId = new mongoose.Types.ObjectId(product as string);
+  const hasPurchased = await Review.hasUserPurchasedProduct(userId, productId);
   if (!hasPurchased) {
     return next(new AppError('Vous devez acheter ce produit avant de pouvoir laisser un avis', 403));
   }
@@ -52,7 +54,7 @@ export const createReview = catchAsync(async (req: Request, res: Response, next:
   });
   
   // Mettre à jour la note moyenne du produit
-  await Product.updateProductRating(product);
+  await Product.updateProductRating(new mongoose.Types.ObjectId(product as string));
   
   res.status(201).json({
     success: true,
@@ -71,7 +73,7 @@ export const getProductReviews = catchAsync(async (req: Request, res: Response, 
   }
   
   // Filtres
-  let query: any = { product: req.params.productId };
+  const query: ReviewQuery = { product: req.params.productId };
   
   // Par défaut, n'afficher que les avis approuvés pour les utilisateurs normaux
   if (req.user?.role !== 'admin') {
@@ -94,24 +96,24 @@ export const getProductReviews = catchAsync(async (req: Request, res: Response, 
   const skip = (page - 1) * limit;
   
   // Tri
-  let sort: any = {};
+  let sortOptions: Record<string, 1 | -1> = {};
   if (req.query.sort) {
     const sortFields = (req.query.sort as string).split(',');
     sortFields.forEach(field => {
       if (field.startsWith('-')) {
-        sort[field.substring(1)] = -1;
+        sortOptions[field.substring(1)] = -1;
       } else {
-        sort[field] = 1;
+        sortOptions[field] = 1;
       }
     });
   } else {
     // Par défaut, trier par date (plus récents d'abord)
-    sort = { createdAt: -1 };
+    sortOptions = { createdAt: -1 };
   }
   
   // Exécuter la requête
   const reviews = await Review.find(query)
-    .sort(sort)
+    .sort(sortOptions)
     .skip(skip)
     .limit(limit)
     .populate('user', 'firstName lastName');
@@ -300,7 +302,7 @@ export const getMostHelpfulReviews = catchAsync(async (req: Request, res: Respon
   
   // Convertir le limit en nombre pour la méthode getMostHelpfulReviews
   // La méthode doit être adaptée pour accepter un nombre plutôt qu'un ObjectId
-  const reviews = await Review.getMostHelpfulReviews(limit as any);
+  const reviews = await Review.getMostHelpfulReviews(limit as unknown as mongoose.Types.ObjectId);
   
   res.status(200).json({
     success: true,

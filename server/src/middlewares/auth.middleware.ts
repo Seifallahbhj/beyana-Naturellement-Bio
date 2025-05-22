@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { AppError, catchAsync } from './errorHandler';
 import User, { UserRole } from '../models/user.model';
+import { JwtPayload } from '../types';
 
 // L'interface Request est déjà étendue dans le fichier types/express.d.ts
 
@@ -14,8 +15,9 @@ export const authenticate = catchAsync(async (req: Request, res: Response, next:
     let token;
 
     // Vérifier si le token est présent dans les headers
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-      token = req.headers.authorization.split(' ')[1];
+    const authHeader = req.headers.authorization;
+    if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer')) {
+      token = authHeader.split(' ')[1];
     } else if (req.cookies?.token) {
       // Ou dans les cookies
       token = req.cookies.token;
@@ -27,7 +29,7 @@ export const authenticate = catchAsync(async (req: Request, res: Response, next:
     }
 
     // Vérifier le token
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
 
     // Vérifier si l'utilisateur existe toujours
     const user = await User.findById(decoded.id);

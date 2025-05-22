@@ -115,12 +115,320 @@
 6. **Tests automatisés** : Développer une suite de tests pour assurer la qualité du code
 7. **Déploiement** : Préparer l'infrastructure pour un déploiement en production
 
-## 7. Conclusion
+## 7. Documentation des interfaces et types
+
+La documentation des interfaces et types est essentielle pour faciliter le développement et la maintenance du projet. Cette section présente les principales interfaces et types utilisés dans le projet Naturellement Bio.
+
+### 7.1 Interfaces du backend
+
+#### Modèles de données
+
+**IUser (Utilisateur)**
+```typescript
+export interface IUser extends Document {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  role: string;
+  isActive: boolean;
+  avatar?: string;
+  addresses: IAddress[];
+  comparePassword(candidatePassword: string): Promise<boolean>;
+}
+```
+
+**IProduct (Produit)**
+```typescript
+export interface IProduct extends Document {
+  name: string;
+  slug: string;
+  description: string;
+  price: number;
+  images: string[];
+  category: mongoose.Types.ObjectId | ICategory;
+  nutritionalInfo: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    sugar: number;
+    fat: number;
+    saturatedFat: number;
+    fiber: number;
+    salt: number;
+    servingSize: string;
+  };
+  ingredients: string[];
+  allergens: string[];
+  countryOfOrigin: string;
+  isOrganic: boolean;
+  isVegan: boolean;
+  isGlutenFree: boolean;
+  stock: number;
+  sold: number;
+  rating: number;
+  numReviews: number;
+  featured: boolean;
+}
+```
+
+**IOrder (Commande)**
+```typescript
+export interface IOrder extends Document {
+  user: mongoose.Types.ObjectId;
+  items: {
+    product: mongoose.Types.ObjectId;
+    name: string;
+    price: number;
+    quantity: number;
+    image: string;
+  }[];
+  shippingAddress: IAddress;
+  paymentMethod: string;
+  paymentResult?: {
+    id: string;
+    status: string;
+    update_time: string;
+    email_address: string;
+  };
+  itemsPrice: number;
+  taxPrice: number;
+  shippingPrice: number;
+  totalPrice: number;
+  isPaid: boolean;
+  paidAt?: Date;
+  status: string;
+  deliveredAt?: Date;
+}
+```
+
+**IReview (Avis)**
+```typescript
+export interface IReview extends Document {
+  user: mongoose.Types.ObjectId;
+  product: mongoose.Types.ObjectId;
+  rating: number;
+  title: string;
+  comment: string;
+  images?: string[];
+  verifiedPurchase: boolean;
+  likes: number;
+  approved: string;
+  isApproved: boolean;
+  helpfulCount: number;
+}
+```
+
+**ICategory (Catégorie)**
+```typescript
+export interface ICategory extends Document {
+  name: string;
+  slug: string;
+  description?: string;
+  parent?: mongoose.Types.ObjectId | ICategory;
+  image?: string;
+  featured: boolean;
+  path?: string[];
+}
+```
+
+#### Types Express personnalisés
+
+**RequestBody (Corps de requête)**
+```typescript
+export interface RequestBody {
+  // Auth
+  email?: string;
+  password?: string;
+  firstName?: string;
+  lastName?: string;
+  token?: string;
+  refreshToken?: string;
+  
+  // Products
+  name?: string;
+  description?: string;
+  price?: number;
+  images?: string[];
+  category?: string;
+  nutritionalInfo?: any;
+  ingredients?: string[];
+  allergens?: string[];
+  countryOfOrigin?: string;
+  isOrganic?: boolean;
+  isVegan?: boolean;
+  isGlutenFree?: boolean;
+  stock?: number;
+  featured?: boolean;
+  
+  // Orders
+  items?: any[];
+  shippingAddress?: any;
+  paymentMethod?: string;
+  status?: string;
+  
+  // Reviews
+  rating?: number;
+  title?: string;
+  comment?: string;
+  approved?: string;
+}
+```
+
+**OrderStatus (Statut de commande)**
+```typescript
+export enum OrderStatus {
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  SHIPPED = 'shipped',
+  DELIVERED = 'delivered',
+  CANCELLED = 'cancelled',
+  REFUNDED = 'refunded'
+}
+```
+
+**ApprovalStatus (Statut d'approbation)**
+```typescript
+export enum ApprovalStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected'
+}
+```
+
+### 7.2 Interfaces du frontend
+
+#### Types d'API
+
+**Product (Produit)**
+```typescript
+export interface Product {
+  _id: string;
+  name: string;
+  slug: string;
+  description: string;
+  price: number;
+  images: string[];
+  category: Category;
+  nutritionalInfo: NutritionalInfo;
+  ingredients: string[];
+  allergens: string[];
+  countryOfOrigin: string;
+  isOrganic: boolean;
+  isVegan: boolean;
+  isGlutenFree: boolean;
+  stock: number;
+  sold: number;
+  rating: number;
+  numReviews: number;
+  featured: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+**User (Utilisateur)**
+```typescript
+export interface User {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  isActive: boolean;
+  avatar?: string;
+  addresses: Address[];
+}
+```
+
+**WishlistItem (Élément de liste de souhaits)**
+```typescript
+export interface WishlistItem {
+  id: string;
+  productId: string;
+  name: string;
+  price: number;
+  image: string;
+  addedAt: string;
+}
+```
+
+**CartItem (Élément de panier)**
+```typescript
+export interface CartItem {
+  id: string;
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  stock: number;
+}
+```
+
+#### Types de contexte
+
+**AuthContextType (Contexte d'authentification)**
+```typescript
+export interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+  login: (email: string, password: string) => Promise<void>;
+  register: (userData: RegisterData) => Promise<void>;
+  logout: () => void;
+  clearError: () => void;
+}
+```
+
+**CartContextType (Contexte de panier)**
+```typescript
+export interface CartContextType {
+  cart: CartState;
+  addItem: (product: Product, quantity: number) => void;
+  removeItem: (itemId: string) => void;
+  updateQuantity: (itemId: string, quantity: number) => void;
+  clearCart: () => void;
+  isInCart: (productId: string) => boolean;
+}
+```
+
+**WishlistContextType (Contexte de liste de souhaits)**
+```typescript
+export interface WishlistContextType {
+  wishlist: WishlistState;
+  addItem: (product: Product) => void;
+  removeItem: (productId: string) => void;
+  clearWishlist: () => void;
+  isInWishlist: (productId: string) => boolean;
+}
+```
+
+### 7.3 Bonnes pratiques de typage
+
+1. **Éviter l'utilisation de `any`** : Remplacer progressivement les types `any` par des interfaces spécifiques pour améliorer la sécurité de type.
+
+2. **Utiliser `@ts-expect-error` au lieu de `@ts-ignore`** : Lorsqu'une suppression de vérification de type est nécessaire, utiliser `@ts-expect-error` avec un commentaire explicatif.
+
+3. **Créer des interfaces pour les requêtes et réponses** : Définir clairement les structures de données attendues pour les requêtes et réponses API.
+
+4. **Utiliser des enums pour les valeurs constantes** : Définir des enums pour les valeurs constantes comme les statuts de commande ou d'approbation.
+
+5. **Documenter les interfaces complexes** : Ajouter des commentaires JSDoc pour expliquer le but et l'utilisation des interfaces complexes.
+
+6. **Éviter les conversions de type forcées** : Minimiser l'utilisation de `as` en faveur de vérifications de type plus sûres.
+
+7. **Implémenter la validation des données** : Utiliser des bibliothèques comme Zod ou Joi pour valider les données entrantes.
+
+## 8. Conclusion
 
 Le projet Naturellement Bio (Beyana) a posé des bases solides pour une plateforme e-commerce moderne et évolutive. Les corrections apportées ont permis de résoudre les problèmes initiaux et d'améliorer la stabilité de l'application. En suivant les recommandations et les bonnes pratiques identifiées, le développement futur devrait être plus fluide et moins sujet aux erreurs.
+
+L'ajout d'une documentation complète des interfaces et types renforce la maintenabilité du code et facilite l'intégration de nouveaux développeurs au projet. Cette documentation devra être maintenue à jour au fur et à mesure que le projet évolue.
 
 La prochaine phase de développement devrait se concentrer sur l'enrichissement des fonctionnalités utilisateur, l'amélioration de la robustesse du système, et la préparation au déploiement en production.
 
 ---
 
-*Rapport généré le 21 mai 2025*
+*Rapport mis à jour le 22 mai 2025*

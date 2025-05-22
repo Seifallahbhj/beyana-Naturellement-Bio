@@ -3,6 +3,8 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 import User, { UserRole } from '../models/user.model';
 import { AppError, catchAsync } from '../middlewares/errorHandler';
+import { JwtPayload, IUserDocument } from '../types';
+import { Document } from 'mongoose';
 
 // Fonction pour générer un token JWT
 const generateToken = (id: string): string => {
@@ -28,8 +30,21 @@ const generateRefreshToken = (id: string): string => {
   );
 };
 
+// Type pour les utilisateurs dans la réponse
+interface UserWithPassword {
+  _id: string;
+  password?: string | undefined;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  role?: string;
+  [key: string]: unknown;
+}
+
+type UserResponseType = IUserDocument | (Document & UserWithPassword);
+
 // Fonction pour envoyer les tokens dans la réponse
-const sendTokenResponse = (user: any, statusCode: number, res: Response) => {
+const sendTokenResponse = (user: UserResponseType, statusCode: number, res: Response) => {
   const token = generateToken(user._id);
   const refreshToken = generateRefreshToken(user._id);
 
@@ -46,7 +61,10 @@ const sendTokenResponse = (user: any, statusCode: number, res: Response) => {
   res.cookie('refreshToken', refreshToken, cookieOptions);
 
   // Supprimer le mot de passe de la sortie
-  user.password = undefined;
+  const userObj = user as UserWithPassword;
+  if (userObj.password !== undefined) {
+    userObj.password = undefined;
+  }
 
   res.status(statusCode).json({
     success: true,
@@ -287,7 +305,7 @@ export const refreshToken = catchAsync(async (req: Request, res: Response, next:
 
   try {
     // Vérifier le refresh token
-    const decoded: any = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET as string);
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET as string) as JwtPayload;
 
     // Vérifier si l'utilisateur existe toujours
     const user = await User.findById(decoded.id);

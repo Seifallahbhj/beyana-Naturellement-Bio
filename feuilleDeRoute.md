@@ -122,3 +122,112 @@ Après analyse de l'état actuel du projet Naturellement Bio (Beyana), voici une
 - 📌 Mise en place d'un système de feedback utilisateur
 - 📌 Développement d'une roadmap d'évolution fonctionnelle
 - 📌 Création d'une documentation technique et utilisateur complète
+
+## Annexe : Documentation des composants UI
+
+Cette section documente les propriétés requises pour chaque composant UI afin d'éviter des erreurs de typage et faciliter leur utilisation.
+
+### Composants de base
+
+#### Button
+```typescript
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  size?: "default" | "sm" | "lg" | "icon";
+  asChild?: boolean;
+}
+```
+
+#### Toggle
+```typescript
+interface ToggleProps extends React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root> {
+  variant?: "default" | "outline";
+  size?: "default" | "sm" | "lg";
+}
+```
+
+### Composants composés
+
+#### ToggleGroup
+```typescript
+// Propriétés requises
+interface ToggleGroupProps {
+  // Obligatoire : définit si un seul ou plusieurs éléments peuvent être sélectionnés
+  type: "single" | "multiple";
+  // Valeur par défaut pour le type "single"
+  defaultValue?: string;
+  // Valeur par défaut pour le type "multiple"
+  defaultValue?: string[];
+  // Autres propriétés optionnelles
+  variant?: "default" | "outline";
+  size?: "default" | "sm" | "lg";
+  className?: string;
+}
+```
+
+#### ToggleGroupItem
+```typescript
+interface ToggleGroupItemProps {
+  // Obligatoire : identifiant unique de l'élément
+  value: string;
+  // Autres propriétés optionnelles
+  variant?: "default" | "outline";
+  size?: "default" | "sm" | "lg";
+  className?: string;
+  disabled?: boolean;
+}
+```
+
+#### AlertDialog
+```typescript
+// Pas de propriétés spéciales requises pour le composant racine
+
+// Pour AlertDialogAction
+interface AlertDialogActionProps {
+  // Utilise les mêmes propriétés que Button
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  size?: "default" | "sm" | "lg" | "icon";
+}
+```
+
+#### Calendar
+```typescript
+interface CalendarProps {
+  // Obligatoire : mode de sélection
+  mode: "single" | "multiple" | "range";
+  // Valeur sélectionnée (selon le mode)
+  selected: Date | Date[] | { from: Date; to: Date };
+  // Fonction appelée lors de la sélection
+  onSelect: (date: Date | Date[] | { from: Date; to: Date }) => void;
+  // Autres propriétés optionnelles
+  className?: string;
+  disabled?: boolean | ((date: Date) => boolean);
+}
+```
+
+#### Pagination
+```typescript
+interface PaginationProps {
+  // Nombre total de pages
+  totalPages: number;
+  // Page actuelle
+  currentPage: number;
+  // Fonction appelée lors du changement de page
+  onPageChange: (page: number) => void;
+  // Autres propriétés optionnelles
+  className?: string;
+  siblingCount?: number; // Nombre de pages affichées avant et après la page courante
+}
+```
+
+### Bonnes pratiques d'utilisation
+
+1. **Toujours spécifier les propriétés obligatoires** : Certains composants comme `ToggleGroup` et `ToggleGroupItem` nécessitent des propriétés spécifiques (`type` et `value` respectivement).
+
+2. **Utiliser les types corrects pour les valeurs** : Par exemple, pour `Calendar`, la propriété `selected` doit correspondre au `mode` choisi.
+
+3. **Éviter les conversions de type forcées** : Utiliser les types appropriés plutôt que des conversions avec `as`.
+
+4. **Consulter la documentation de Radix UI** : La plupart des composants sont basés sur Radix UI, dont la documentation détaille les propriétés disponibles.
+
+5. **Tester les composants après modification** : Après avoir modifié un composant, vérifier son fonctionnement dans différents contextes d'utilisation.

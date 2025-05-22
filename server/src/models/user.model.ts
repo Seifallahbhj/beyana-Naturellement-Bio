@@ -76,7 +76,7 @@ const userSchema = new Schema({
     trim: true,
     lowercase: true,
     match: [
-      /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
+      /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/,
       'Veuillez fournir un email valide'
     ]
   },
@@ -122,8 +122,8 @@ userSchema.pre<IUser>('save', async function(next) {
     // Hacher le mot de passe avec le salt
     this.password = await bcrypt.hash(this.password, salt);
     next();
-  } catch (error: any) {
-    next(error);
+  } catch (error: unknown) {
+    next(error instanceof Error ? error : new Error(String(error)));
   }
 });
 

@@ -12,6 +12,31 @@ export interface Category {
   isActive: boolean;
 }
 
+export interface Product {
+  _id: string;
+  name: string;
+  slug: string;
+  description: string;
+  price: number;
+  discountPrice?: number;
+  images: string[];
+  category: string | Category;
+  stock: number;
+  rating?: number;
+  numReviews?: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  count: number;
+  total: number;
+  pagination: {
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
 export interface CategoryPath {
   _id: string;
   name: string;
@@ -46,8 +71,8 @@ const categoryService = {
   },
   
   // Récupérer les produits d'une catégorie
-  getCategoryProducts: async (categoryId: string, page = 1, limit = 10): Promise<ApiResponse<any>> => {
-    return api.get<any>(`/categories/${categoryId}/products?page=${page}&limit=${limit}`);
+  getCategoryProducts: async (categoryId: string, page = 1, limit = 10): Promise<ApiResponse<PaginatedResponse<Product>>> => {
+    return api.get<PaginatedResponse<Product>>(`/categories/${categoryId}/products?page=${page}&limit=${limit}`);
   },
   
   // Créer une nouvelle catégorie (admin)

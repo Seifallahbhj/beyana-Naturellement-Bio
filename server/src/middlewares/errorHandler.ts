@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import mongoose from 'mongoose';
 
 // Interface pour les erreurs personnalisées
 export class AppError extends Error {
@@ -24,7 +25,7 @@ export const errorHandler = (
   // Erreur par défaut
   let statusCode = 500;
   let message = 'Erreur serveur';
-  let errors: any = {};
+  const errors: Record<string, string> = {};
 
   // Si c'est une erreur personnalisée
   if ('statusCode' in err) {
@@ -36,7 +37,7 @@ export const errorHandler = (
   if (err.name === 'ValidationError' && err instanceof Error) {
     statusCode = 400;
     message = 'Erreur de validation';
-    const validationErrors = err as any;
+    const validationErrors = err as mongoose.Error.ValidationError;
     
     if (validationErrors.errors) {
       Object.keys(validationErrors.errors).forEach(key => {
@@ -46,14 +47,21 @@ export const errorHandler = (
   }
 
   // Erreur de duplication MongoDB
-  if ((err as any).code === 11000) {
+  if ('code' in err && err.code === 11000) {
     statusCode = 400;
     message = 'Erreur de duplication';
-    const duplicateError = err as any;
+    
+    // Définir une interface pour les erreurs de duplication MongoDB
+    interface MongoDuplicateKeyError extends Error {
+      code: number;
+      keyValue?: Record<string, unknown>;
+    }
+    
+    const duplicateError = err as MongoDuplicateKeyError;
     
     if (duplicateError.keyValue) {
       const field = Object.keys(duplicateError.keyValue)[0];
-      errors[field] = `La valeur '${duplicateError.keyValue[field]}' est déjà utilisée`;
+      errors[field] = `La valeur '${String(duplicateError.keyValue[field])}' est déjà utilisée`;
     }
   }
 
@@ -61,9 +69,9 @@ export const errorHandler = (
   if (err.name === 'CastError') {
     statusCode = 400;
     message = 'Ressource non trouvée';
-    const castError = err as any;
+    const castError = err as mongoose.Error.CastError;
     errors.field = castError.path;
-    errors.value = castError.value;
+    errors.value = String(castError.value);
   }
 
   // Erreur JWT
@@ -88,7 +96,7 @@ export const errorHandler = (
 };
 
 // Middleware pour capturer les erreurs asynchrones
-export const catchAsync = (fn: Function) => {
+export const catchAsync = <T extends (req: Request, res: Response, next: NextFunction) => Promise<unknown>>(fn: T) => {
   return (req: Request, res: Response, next: NextFunction) => {
     fn(req, res, next).catch(next);
   };

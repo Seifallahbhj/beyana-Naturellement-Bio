@@ -64,7 +64,7 @@ const createProducts = async (categoryMap: Map<string, mongoose.Types.ObjectId>)
       slug: 'granola-proteine',
       description: 'Un granola riche en protéines, parfait pour commencer la journée avec énergie. Fabriqué à partir d\'ingrédients biologiques de haute qualité.',
       price: 9.99,
-      images: ['https://images.unsplash.com/photo-1517093157656-b9eccef91cb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+      images: ['https://images.unsplash.com/photo-1504708706948-13d6cbba4062?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
       category: categoryMap.get('petit-dejeuner'),
       nutritionalInfo: {
         calories: 420,
@@ -94,7 +94,7 @@ const createProducts = async (categoryMap: Map<string, mongoose.Types.ObjectId>)
       slug: 'porridge-fruits-rouges',
       description: 'Porridge crémeux aux fruits rouges, riche en fibres et en vitamines. Prêt en quelques minutes pour un petit-déjeuner équilibré.',
       price: 7.50,
-      images: ['https://images.unsplash.com/photo-1517747614396-d21a78b850e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+      images: ['https://images.unsplash.com/photo-1613082410785-22292e8426e7?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8UG9ycmlkZ2UlMjBhdXglMjBmcnVpdHMlMjByb3VnZXN8ZW58MHx8MHx8fDA%3D'],
       category: categoryMap.get('petit-dejeuner'),
       nutritionalInfo: {
         calories: 350,
@@ -128,7 +128,7 @@ const createProducts = async (categoryMap: Map<string, mongoose.Types.ObjectId>)
       slug: 'poudre-spiruline',
       description: 'Spiruline 100% pure et naturelle, riche en protéines, fer et antioxydants. Un superaliment complet pour booster votre système immunitaire.',
       price: 15.99,
-      images: ['https://images.unsplash.com/photo-1626197031507-c17099753214?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+      images: ['https://images.unsplash.com/photo-1664956618676-9e65fe31a165?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8UG91ZHJlJTIwZGUlMjBzcGlydWxpbmV8ZW58MHx8MHx8fDA%3D'],
       category: categoryMap.get('superaliments'),
       nutritionalInfo: {
         calories: 290,
@@ -158,7 +158,7 @@ const createProducts = async (categoryMap: Map<string, mongoose.Types.ObjectId>)
       slug: 'baies-goji',
       description: 'Baies de Goji séchées, riches en antioxydants et en vitamines. Parfaites pour les smoothies, müeslis ou en-cas.',
       price: 12.50,
-      images: ['https://images.unsplash.com/photo-1615485500704-8e990f9900f7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+      images: ['https://images.unsplash.com/photo-1654600870472-7c4afe2f70e1?q=80&w=1935&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
       category: categoryMap.get('superaliments'),
       nutritionalInfo: {
         calories: 349,
@@ -192,7 +192,7 @@ const createProducts = async (categoryMap: Map<string, mongoose.Types.ObjectId>)
       slug: 'mix-noix-bio',
       description: 'Mélange de noix de qualité biologique : amandes, noix de cajou, noisettes et noix du Brésil. Riche en acides gras essentiels et en protéines.',
       price: 12.50,
-      images: ['https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+      images: ['https://images.unsplash.com/photo-1614807618309-9de716b16eac?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NTB8fE1peCUyMGRlJTIwbm9peHxlbnwwfHwwfHx8MA%3D%3D'],
       category: categoryMap.get('snacks'),
       nutritionalInfo: {
         calories: 650,
@@ -256,7 +256,7 @@ const createProducts = async (categoryMap: Map<string, mongoose.Types.ObjectId>)
       slug: 'kombucha-gingembre-citron',
       description: 'Boisson fermentée naturellement pétillante au gingembre et citron. Riche en probiotiques pour une bonne santé digestive.',
       price: 4.99,
-      images: ['https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+      images: ['https://images.unsplash.com/photo-1563227812-0ea4c22e6cc8?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
       category: categoryMap.get('boissons'),
       nutritionalInfo: {
         calories: 25,

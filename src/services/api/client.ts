@@ -1,6 +1,5 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
-// Types
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
@@ -8,12 +7,13 @@ export interface ApiResponse<T = unknown> {
   count?: number;
 }
 
-// Configuration par défaut
-// En développement, on utilise le proxy configuré dans vite.config.ts
-// En production, on utilise l'URL complète définie dans les variables d'environnement
+/**
+ * Configuration de l'API
+ * - En développement: utilise le proxy configuré dans vite.config.ts
+ * - En production: utilise l'URL complète des variables d'environnement
+ */
 const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
-// Création de l'instance Axios
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
@@ -22,38 +22,35 @@ const apiClient: AxiosInstance = axios.create({
   timeout: 10000,
 });
 
-// Intercepteur de requêtes
+/**
+ * Ajoute automatiquement le token JWT aux requêtes si disponible
+ */
 apiClient.interceptors.request.use(
   (config) => {
-    // Récupération du token depuis le localStorage
     const token = localStorage.getItem('token');
     
-    // Ajout du token à l'en-tête Authorization si disponible
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Intercepteur de réponses
+/**
+ * Gère les réponses API et implémente le rafraîchissement automatique des tokens
+ * en cas d'expiration (401 Unauthorized)
+ */
 apiClient.interceptors.response.use(
-  (response: AxiosResponse) => {
-    return response;
-  },
+  (response: AxiosResponse) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
     
-    // Gestion du token expiré (401 Unauthorized)
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       
       try {
-        // Tentative de rafraîchissement du token
         const refreshToken = localStorage.getItem('refreshToken');
         
         if (refreshToken) {
@@ -62,27 +59,21 @@ apiClient.interceptors.response.use(
           });
           
           const { token } = response.data.data;
-          
-          // Mise à jour du token dans le localStorage
           localStorage.setItem('token', token);
           
-          // Mise à jour du token dans la requête originale
           if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${token}`;
           } else {
             originalRequest.headers = { Authorization: `Bearer ${token}` };
           }
           
-          // Réessayer la requête originale avec le nouveau token
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
-        // En cas d'échec du rafraîchissement, déconnexion de l'utilisateur
+        // Déconnexion en cas d'échec du rafraîchissement
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
-        
-        // Redirection vers la page de connexion
         window.location.href = '/login';
       }
     }
@@ -91,7 +82,9 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Fonctions d'API génériques
+/**
+ * Fonctions d'API génériques avec gestion d'erreurs intégrée
+ */
 export const api = {
   get: async <T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> => {
     try {
@@ -134,23 +127,26 @@ export const api = {
   },
 };
 
-// Gestionnaire d'erreurs API
+/**
+ * Journalise les erreurs API avec des informations détaillées pour faciliter le débogage
+ */
 const handleApiError = (error: AxiosError): void => {
   const errorResponse = error.response?.data as ApiResponse | undefined;
   const errorMessage = errorResponse?.message || 'Une erreur est survenue';
   
-  // Log détaillé de l'erreur pour le débogage
   console.error('API Error:', {
     status: error.response?.status,
     statusText: error.response?.statusText,
     url: error.config?.url,
     method: error.config?.method?.toUpperCase(),
     message: errorMessage,
-    data: errorResponse
+    data: errorResponse,
+    headers: error.config?.headers,
+    requestData: error.config?.data,
+    responseData: error.response?.data
   });
   
-  // Ici, vous pourriez intégrer un système de notification comme toast
-  // ou envoyer l'erreur à un service de monitoring
+  console.warn(`🔴 API ERROR (${error.response?.status || 'unknown'}): ${errorMessage}`);
 };
 
 export default api;

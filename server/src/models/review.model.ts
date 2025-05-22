@@ -88,13 +88,13 @@ reviewSchema.index({ user: 1, product: 1 }, { unique: true });
 
 // Middleware pour mettre à jour la note moyenne du produit après l'ajout d'un avis
 reviewSchema.post('save', async function() {
-  // @ts-ignore
+  // @ts-expect-error Le type de this.constructor n'est pas correctement inféré
   await this.constructor.calcAverageRating(this.product);
 });
 
 // Middleware pour mettre à jour la note moyenne du produit après la suppression d'un avis
 reviewSchema.post('deleteOne', { document: true, query: false }, async function() {
-  // @ts-ignore
+  // @ts-expect-error Le type de this.constructor n'est pas correctement inféré
   await this.constructor.calcAverageRating(this.product);
 });
 

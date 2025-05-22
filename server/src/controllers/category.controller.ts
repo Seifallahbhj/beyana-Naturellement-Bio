@@ -3,13 +3,14 @@ import mongoose from 'mongoose';
 import Category from '../models/category.model';
 import Product from '../models/product.model';
 import { AppError, catchAsync } from '../middlewares/errorHandler';
+import { CategoryQuery } from '../types';
 
 // @desc    Récupérer toutes les catégories avec filtres
 // @route   GET /api/v1/categories
 // @access  Public
 export const getCategories = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   // Construire la requête
-  let query: any = {};
+  const query: CategoryQuery = {};
   
   // Filtrer par niveau (catégories principales ou sous-catégories)
   if (req.query.level !== undefined) {
@@ -21,7 +22,7 @@ export const getCategories = catchAsync(async (req: Request, res: Response, next
     if (req.query.parent === 'null') {
       query.parent = null; // Catégories principales
     } else {
-      query.parent = req.query.parent;
+      query.parent = req.query.parent as string;
     }
   }
   
@@ -31,23 +32,23 @@ export const getCategories = catchAsync(async (req: Request, res: Response, next
   }
   
   // Tri
-  let sort: any = {};
+  let sortOptions: Record<string, 1 | -1> = {};
   if (req.query.sort) {
     const sortFields = (req.query.sort as string).split(',');
-    sortFields.forEach(field => {
+    sortFields.forEach((field: string) => {
       if (field.startsWith('-')) {
-        sort[field.substring(1)] = -1;
+        sortOptions[field.substring(1)] = -1;
       } else {
-        sort[field] = 1;
+        sortOptions[field] = 1;
       }
     });
   } else {
-    sort = { name: 1 }; // Par défaut, tri par nom
+    sortOptions = { name: 1 }; // Par défaut, tri par nom
   }
   
   // Exécuter la requête
   const categories = await Category.find(query)
-    .sort(sort)
+    .sort(sortOptions)
     .populate('parent', 'name slug');
   
   res.status(200).json({
@@ -209,7 +210,7 @@ export const getCategoryPath = catchAsync(async (req: Request, res: Response, ne
   }
   
   // Récupérer le chemin complet de la catégorie
-  const path = await Category.getCategoryPath(req.params.id);
+  const path = await Category.getCategoryPath(new mongoose.Types.ObjectId(req.params.id));
   
   res.status(200).json({
     success: true,
@@ -229,7 +230,7 @@ export const getCategoryProducts = catchAsync(async (req: Request, res: Response
   
   // Récupérer tous les IDs de sous-catégories
   const subcategories = await Category.find({ parent: req.params.id });
-  const categoryIds = [req.params.id, ...subcategories.map(subcat => subcat._id)];
+  const categoryIds = [req.params.id, ...subcategories.map((subcat) => subcat._id.toString())];
   
   // Pagination
   const page = parseInt(req.query.page as string) || 1;
@@ -237,23 +238,23 @@ export const getCategoryProducts = catchAsync(async (req: Request, res: Response
   const skip = (page - 1) * limit;
   
   // Tri
-  let sort: any = {};
+  let sortOptions: Record<string, 1 | -1> = {};
   if (req.query.sort) {
     const sortFields = (req.query.sort as string).split(',');
-    sortFields.forEach(field => {
+    sortFields.forEach((field: string) => {
       if (field.startsWith('-')) {
-        sort[field.substring(1)] = -1;
+        sortOptions[field.substring(1)] = -1;
       } else {
-        sort[field] = 1;
+        sortOptions[field] = 1;
       }
     });
   } else {
-    sort = { createdAt: -1 };
+    sortOptions = { createdAt: -1 };
   }
   
   // Récupérer les produits
   const products = await Product.find({ category: { $in: categoryIds } })
-    .sort(sort)
+    .sort(sortOptions)
     .skip(skip)
     .limit(limit)
     .populate('category', 'name slug');

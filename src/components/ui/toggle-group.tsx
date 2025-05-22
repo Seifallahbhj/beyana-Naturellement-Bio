@@ -12,10 +12,21 @@ const ToggleGroupContext = React.createContext<
   variant: "default",
 })
 
+// Définir explicitement les types pour éviter les erreurs de typage
+type ToggleGroupProps = (
+  | React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root>
+  | { type: "single"; defaultValue?: string }
+  | { type: "multiple"; defaultValue?: string[] }
+) & VariantProps<typeof toggleVariants> & {
+  className?: string;
+  variant?: string;
+  size?: string;
+  children?: React.ReactNode;
+};
+
 const ToggleGroup = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root> &
-    VariantProps<typeof toggleVariants>
+  ToggleGroupProps
 >(({ className, variant, size, children, ...props }, ref) => (
   <ToggleGroupPrimitive.Root
     ref={ref}
@@ -34,12 +45,13 @@ const ToggleGroupItem = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item> &
     VariantProps<typeof toggleVariants>
->(({ className, children, variant, size, ...props }, ref) => {
+>(({ className, children, variant, size, value = "", ...props }, ref) => {
   const context = React.useContext(ToggleGroupContext)
 
   return (
     <ToggleGroupPrimitive.Item
       ref={ref}
+      value={value}
       className={cn(
         toggleVariants({
           variant: context.variant || variant,

@@ -240,11 +240,6 @@ export const updateOrderStatus = catchAsync(async (req: Request, res: Response, 
     return next(new AppError('Veuillez fournir un statut', 400));
   }
   
-  // Vérifier si le statut est valide
-  if (!Object.values(OrderStatus).includes(status as OrderStatus)) {
-    return next(new AppError(`Statut invalide. Les valeurs autorisées sont: ${Object.values(OrderStatus).join(', ')}`, 400));
-  }
-  
   const order = await Order.findById(req.params.id);
   
   if (!order) {
@@ -252,7 +247,7 @@ export const updateOrderStatus = catchAsync(async (req: Request, res: Response, 
   }
   
   // Mettre à jour le statut
-  order.status = status as OrderStatus;
+  order.status = status;
   await order.save();
   
   // TODO: Envoyer un email de notification au client
